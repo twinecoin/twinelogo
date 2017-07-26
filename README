@@ -1,0 +1,13 @@
+TwineCoin Logo Generator
+
+This is a simple SVG generator that generates the TwineCoin logo.
+
+Build Instructions
+
+Maven is used for building
+
+mvn clean package
+
+The executable jar is placed in the /target directory.
+
+The SVG file is placed in the /img directory.
