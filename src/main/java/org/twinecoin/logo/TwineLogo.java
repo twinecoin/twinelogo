@@ -18,7 +18,7 @@ public class TwineLogo {
 		SVG.openSVG(buf);
 		
 		for (int s = 0; s < 360; s += 120) {
-			writeTwist(buf, 128, 128, 96, 12, s, 12, true);
+			writeTwist(buf, 128, 128, 106, 18, s, 6, true);
 		}
 		
 		writeT(buf);
@@ -54,6 +54,10 @@ public class TwineLogo {
 	
 	}
 	
+	private static boolean drawTest(float cosTwist) {
+		return cosTwist > 0.99 || cosTwist < 0.55;
+	}
+	
 	public static void writeTwist(StringBuilder buf, float cx, float cy, float r, float tr, float degreesShift, int twistRate, boolean hideInward) {
 		float et = (float) (Math.PI * 2);
 		
@@ -63,9 +67,9 @@ public class TwineLogo {
 		
 		List<Float> points = new ArrayList<Float>();
 		
-		int Xstep = 1;
+		float Xstep = (float) 0.1;
 		
-		int startX = 0;
+		float startX = 0;
 		float cosTwist;
 		
 		do {
@@ -75,17 +79,17 @@ public class TwineLogo {
 			cosTwist = (float) Math.cos(twTh);
 			
 			startX += Xstep;
-		} while (hideInward && cosTwist < threshold);
+		} while (hideInward && drawTest(cosTwist));
 		
 		boolean active = !hideInward;
 				
-		for (int x = startX; x < 360 + startX; x += Xstep) {
+		for (float x = startX; x < 360 + startX; x += Xstep) {
 			float th = (et * x) / 360;
 			float twTh = shift + twistRate * th;
 			
 			cosTwist = (float) Math.cos(twTh);
 			
-			boolean draw = cosTwist < threshold || !hideInward;
+			boolean draw = drawTest(cosTwist) || !hideInward;
 			
 			if (draw && !active) {
 				active = true;
