@@ -1,3 +1,27 @@
+/**
+ * MIT License
+ * 
+ * Copyright (c) 2017 Twinecoin Developers
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.twinecoin.logo;
 import java.util.List;
 
@@ -68,6 +92,51 @@ public class SVG {
 		buf.append("/>\n");
 	}
 	
+	public static void writeCircle(StringBuilder buf, float cx, float cy, float r, boolean ink, boolean fill, int dots) {
+		float w = fill ? 0 : 2;
+		r = fill ? r : (r - (w / 2));
+		
+		buf.append("  <circle ");
+		writeTag(buf, "cx", cx);
+		writeSpace(buf);
+		writeTag(buf, "cy", cy);
+		writeSpace(buf);
+		writeTag(buf, "r", r);
+		writeSpace(buf);
+		String c = ink ? "0" : "255";
+		String color = "rgb(" + c + ", " + c + ", " + c + ")";
+		String style = "";
+		if (ink) {
+			style += "stroke:" + color + ";";
+		}
+
+		style += "fill:";
+		style += fill ? color : "none";
+		style += ";";
+
+		style += "stroke-width:";
+		style += w;
+		style += ";";
+
+		if (dots > 0) {
+			style += "stroke-linecap:round;";
+			
+			style += "stroke-dasharray:";
+
+			float length = (float) (2 * Math.PI * r);
+			float step = length / 2 / dots;
+		
+			float dash = (float) (step * 0.125);
+			float space = step - dash;
+			style += dash + ", " + space;
+
+			style += ";";
+		}
+		
+		writeTag(buf, "style", style);
+		buf.append("/>\n");
+	}
+	
 	private static void writeSpace(StringBuilder buf) {
 		buf.append(" ");
 	}
@@ -86,7 +155,7 @@ public class SVG {
 	}
 	
 	private static void writeFloat(StringBuilder buf, float x) {
-		writeFloat(buf, x, 1);
+		buf.append(x);
 	}
 	
 	private static void writeFloat(StringBuilder buf, float x, int r) {

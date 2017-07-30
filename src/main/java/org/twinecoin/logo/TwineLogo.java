@@ -1,3 +1,27 @@
+/**
+ * MIT License
+ * 
+ * Copyright (c) 2017 Twinecoin Developers
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.twinecoin.logo;
 
 import java.io.BufferedWriter;
@@ -17,6 +41,10 @@ public class TwineLogo {
 		
 		SVG.openSVG(buf);
 		
+		SVG.writeCircle(buf, 128, 128, 127, false, true, 0);
+		
+		SVG.writeCircle(buf, 128, 128, 85, true, false, 36);
+		
 		for (int s = 0; s < 360; s += 120) {
 			writeTwist(buf, 128, 128, 106, 18, s, 6, true);
 		}
@@ -25,16 +53,38 @@ public class TwineLogo {
 		
 		SVG.closeSVG(buf);
 		
-		String SVGString = buf.toString();
-		
 		File dir = new File("img");
 		dir.mkdirs();
 		
 		File file = new File(dir, "twinelogo.svg");
 		
-		if (!writeOutputFile(file, SVGString)) {
+		writeFile(buf, file);
+		
+		buf = new StringBuilder();
+
+		writeHTML(buf);
+		
+		file = new File(dir, "twinelogo.html");
+		
+		writeFile(buf, file);
+	}
+	
+	public static void writeFile(StringBuilder buf, File file) {
+		String string = buf.toString();
+		if (!writeOutputFile(file, string)) {
 			System.out.println("Unable to open file " + file + " for writing");
 		}
+	}
+	
+	public static void writeHTML(StringBuilder buf) {
+		buf.append("<html>\n");
+		buf.append(" <head>\n");
+		buf.append(" </head>\n");
+		buf.append(" <body style=\"background-color:lightgrey\">\n");
+		buf.append("  <img src=\"./twinelogo.svg\"/>\n");
+		buf.append(" </body>\n");
+		buf.append("</html>\n");
+		
 	}
 	
 	public static void writeT(StringBuilder buf) {
@@ -62,8 +112,6 @@ public class TwineLogo {
 		float et = (float) (Math.PI * 2);
 		
 		float shift = (float) (Math.PI * degreesShift / 180);
-		
-		float threshold = (float) 0.5;
 		
 		List<Float> points = new ArrayList<Float>();
 		
