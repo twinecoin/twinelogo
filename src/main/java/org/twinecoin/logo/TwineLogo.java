@@ -46,9 +46,9 @@ public class TwineLogo {
 		SVG.writeCircle(buf, 128, 128, 85, true, false, 36);
 		
 		for (int s = 0; s < 360; s += 120) {
-			writeTwist(buf, 128, 128, 106, 18, s, 6, true);
+			writeTwist(buf, 128, 128, 106, 18, s, 6, true, 2);
 		}
-		
+
 		writeT(buf);
 		
 		SVG.closeSVG(buf);
@@ -98,30 +98,49 @@ public class TwineLogo {
 		
 		SVG.writePolyLine(buf, points, true, false, 20);
 		
-		SVG.writeLine(buf, 114, 67, 114, 189, true, 8, true);
-		SVG.writeLine(buf, 128, 64, 128, 192, true, 8, true);
-		SVG.writeLine(buf, 142, 67, 142, 189, true, 8, true);
-	
+		float r = 106;
+
+		float rate = (float) (2 * Math.PI * r / 128);
+
+		for (int s = 0; s < 360; s += 120) {
+			writeTwistLine(buf, 128, 64, 128, 192, r, 12, s, rate, true, 6);
+		}
 	}
 	
 	private static boolean drawTest(float cosTwist) {
 		return cosTwist > 0.99 || cosTwist < 0.55;
 	}
 	
-	public static void writeTwist(StringBuilder buf, float cx, float cy, float r, float tr, float degreesShift, int twistRate, boolean hideInward) {
+	public static void writeTwist(StringBuilder buf, float cx, float cy, float r, float tr, float degreesShift, float twistRate, boolean hideInward, int w) {
+		writeTwist(buf, cx, cy, 0, 0, r, tr, degreesShift, twistRate, false, hideInward, w);
+	}
+
+	public static void writeTwistLine(StringBuilder buf, float sx, float sy, float ex, float ey, float r, float tr, float degreesShift, float twistRate, boolean hideInward, int w) {
+		writeTwist(buf, sx, sy, ex, ey, r, tr, degreesShift, twistRate, true, hideInward, w);
+	}
+
+	public static void writeTwist(StringBuilder buf, float cx, float cy, float ex, float ey, float r, float tr, float degreesShift, float twistRate, boolean line, boolean hideInward, int w) {
 		float et = (float) (Math.PI * 2);
 		
 		float shift = (float) (Math.PI * degreesShift / 180);
 		
+		float dx = ex - cx;
+		float dy = ey - cy;
+		float mag = (float) Math.sqrt(dx * dx + dy * dy);
+		dx /= mag;
+		dy /= mag;
+
+		float endDegrees = line ? (360 * mag / et / r) : 360;
+
 		List<Float> points = new ArrayList<Float>();
 		
 		float Xstep = (float) 0.1;
 		
-		float startX = 0;
+		float startX = line ? -360 : 0;
 		float cosTwist;
 		
 		do {
-			float th = (et * startX) / 360;
+			float th = (et * startX) / endDegrees;
 			float twTh = shift + twistRate * th;
 			
 			cosTwist = (float) Math.cos(twTh);
@@ -130,9 +149,11 @@ public class TwineLogo {
 		} while (hideInward && drawTest(cosTwist));
 		
 		boolean active = !hideInward;
+
+		float end = line ? endDegrees : (endDegrees + startX);
 				
-		for (float x = startX; x < 360 + startX; x += Xstep) {
-			float th = (et * x) / 360;
+		for (float x = startX; x <= end; x += Xstep) {
+			float th = (et * x) / endDegrees;
 			float twTh = shift + twistRate * th;
 			
 			cosTwist = (float) Math.cos(twTh);
@@ -144,21 +165,37 @@ public class TwineLogo {
 			}
 			
 			if (active && !draw) {
-				SVG.writePolyLine(buf, points, true, false, 2);
-				points.clear();
+				if (points.size() > 0) {
+					SVG.writePolyLine(buf, points, true, false, w);
+					points.clear();
+				}
 				active = false;
 			}
 			
 			if (draw) {
-				float R = (float) (r + tr * Math.sin(twTh));
+				if (!line) {
+					float R = (float) (r + tr * Math.sin(twTh));
 
-				points.add((float) (cx + R * Math.sin(th)));
-				points.add((float) (cx + R * Math.cos(th)));
+					points.add((float) (cx + R * Math.sin(th)));
+					points.add((float) (cx + R * Math.cos(th)));
+				} else {
+					float D = (float) (tr * Math.sin(twTh));
+
+					float d = th * r;
+
+					if (d >= 0 && d <= mag) {
+						float lineX = cx + dx * d - dy * D;
+						float lineY = cy + dy * d + dx * D;
+
+						points.add(lineX);
+						points.add(lineY);
+					}
+				}
 			}
 		}
 		
 		if (points.size() > 0) {
-			SVG.writePolyLine(buf, points, true, false, 2);
+			SVG.writePolyLine(buf, points, true, false, w);
 		}
 
 	}

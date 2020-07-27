@@ -30,3 +30,6 @@ convert -size 256x256   -background none ../img/twinelogo.svg                   
 convert -size 128x128   -background none ../img/twinelogo.svg -resize 128x128   ../reference/twinelogo.png
 convert -size 128x128   -background none ../img/twinelogo.svg -resize 128x128   ../reference/twinelogo128.png
 convert -size 64x64     -background none ../img/twinelogo.svg -resize 64x64     ../reference/twinelogo64.png
+
+cp ../reference/twinelogo64.png ../reference/twinelogo_small.png
+cp ../reference/twinelogo256.png ../reference/twinelogo_full.png
