@@ -1,18 +1,18 @@
 /**
  * MIT License
- * 
+ *
  * Copyright (c) 2017 Twinecoin Developers
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,6 +24,7 @@
 
 package org.twinecoin.logo;
 
+import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,46 +37,57 @@ import java.util.List;
 public class TwineLogo {
 
 	public static void main(String[] args) {
-		
+		ColorTemplate template = ColorTemplate.YELLOW_ON_GREEN;
+
+		Color[] twistColors = template.twistColors;
+
+		Color curveColor = template.curveColor;
+		Color curveBorderColor = template.curveBorderColor;
+
+		Color coinColor = template.coinColor;
+		Color dotsColor = template.dotsColor;
+
+		float scale = 1.4f;
+
 		StringBuilder buf = new StringBuilder();
-		
+
 		SVG.openSVG(buf);
-		
-		SVG.writeCircle(buf, 128, 128, 127, false, true, 0);
-		
-		SVG.writeCircle(buf, 128, 128, 85, true, false, 36);
-		
+
+		SVG.writeCircle(buf, 128, 128, 127, null, coinColor, 0);
+
+		SVG.writeCircle(buf, 128, 128, 85 * scale, dotsColor, null, 36);
+
 		for (int s = 0; s < 360; s += 120) {
-			writeTwist(buf, 128, 128, 106, 18, s, 6, true, 2);
+			//writeTwist(buf, 128, 128, 106, 18, s, 6, true, 2);
 		}
 
-		writeT(buf);
-		
+		writeT(buf, twistColors, curveColor, curveBorderColor, scale);
+
 		SVG.closeSVG(buf);
-		
+
 		File dir = new File("img");
 		dir.mkdirs();
-		
+
 		File file = new File(dir, "twinelogo.svg");
-		
+
 		writeFile(buf, file);
-		
+
 		buf = new StringBuilder();
 
 		writeHTML(buf);
-		
+
 		file = new File(dir, "twinelogo.html");
-		
+
 		writeFile(buf, file);
 	}
-	
+
 	public static void writeFile(StringBuilder buf, File file) {
 		String string = buf.toString();
 		if (!writeOutputFile(file, string)) {
 			System.out.println("Unable to open file " + file + " for writing");
 		}
 	}
-	
+
 	public static void writeHTML(StringBuilder buf) {
 		buf.append("<html>\n");
 		buf.append(" <head>\n");
@@ -84,46 +96,48 @@ public class TwineLogo {
 		buf.append("  <img src=\"./twinelogo.svg\"/>\n");
 		buf.append(" </body>\n");
 		buf.append("</html>\n");
-		
-	}
-	
-	public static void writeT(StringBuilder buf) {
-		List<Float> points = new ArrayList<Float>();
 
-		for (int x = 72; x <= 184; x += 1) {
-			points.add((float) x);
-			float h = (float) ((32.0 * Math.pow(128 - x, 2)) / Math.pow(64, 2));
-			points.add(82 + h);
-		}
-		
-		SVG.writePolyLine(buf, points, true, false, 20);
-		
+	}
+
+	public static void writeT(StringBuilder buf, Color[] colors, Color curveColor, Color curveBorderColor, float scale) {
 		float r = 106;
 
 		float rate = (float) (2 * Math.PI * r / 128);
 
+		int i = 0;
 		for (int s = 0; s < 360; s += 120) {
-			writeTwistLine(buf, 128, 64, 128, 192, r, 12, s, rate, true, 6);
+			writeTwistLine(buf, 128, 64, 128, 192, r, 12, s, rate, colors[i++], true, 10, scale);
 		}
+
+		List<Float> points = new ArrayList<Float>();
+
+		for (int x = 72; x <= 184; x += 1) {
+			points.add(128 + scale * (x - 128));
+			float h = (float) ((32.0 * Math.pow(128 - x, 2)) / Math.pow(64, 2));
+			points.add(128 + scale * (h - 46));
+		}
+
+		SVG.writePolyLine(buf, points, curveBorderColor, false, 24);
+		SVG.writePolyLine(buf, points, curveColor, false, 20);
 	}
-	
+
 	private static boolean drawTest(float cosTwist) {
 		return cosTwist > 0.99 || cosTwist < 0.55;
 	}
-	
-	public static void writeTwist(StringBuilder buf, float cx, float cy, float r, float tr, float degreesShift, float twistRate, boolean hideInward, int w) {
-		writeTwist(buf, cx, cy, 0, 0, r, tr, degreesShift, twistRate, false, hideInward, w);
+
+	public static void writeTwist(StringBuilder buf, float cx, float cy, float r, float tr, float degreesShift, float twistRate, boolean hideInward, Color inkColor, int w, float scale) {
+		writeTwist(buf, cx, cy, 0, 0, r, tr, degreesShift, twistRate, false, inkColor, hideInward, w, scale);
 	}
 
-	public static void writeTwistLine(StringBuilder buf, float sx, float sy, float ex, float ey, float r, float tr, float degreesShift, float twistRate, boolean hideInward, int w) {
-		writeTwist(buf, sx, sy, ex, ey, r, tr, degreesShift, twistRate, true, hideInward, w);
+	public static void writeTwistLine(StringBuilder buf, float sx, float sy, float ex, float ey, float r, float tr, float degreesShift, float twistRate, Color inkColor, boolean hideInward, int w, float scale) {
+		writeTwist(buf, sx, sy, ex, ey, r, tr, degreesShift, twistRate, true, inkColor, hideInward, w, scale);
 	}
 
-	public static void writeTwist(StringBuilder buf, float cx, float cy, float ex, float ey, float r, float tr, float degreesShift, float twistRate, boolean line, boolean hideInward, int w) {
+	public static void writeTwist(StringBuilder buf, float cx, float cy, float ex, float ey, float r, float tr, float degreesShift, float twistRate, boolean line, Color inkColor, boolean hideInward, int w, float scale) {
 		float et = (float) (Math.PI * 2);
-		
+
 		float shift = (float) (Math.PI * degreesShift / 180);
-		
+
 		float dx = ex - cx;
 		float dy = ey - cy;
 		float mag = (float) Math.sqrt(dx * dx + dy * dy);
@@ -133,45 +147,45 @@ public class TwineLogo {
 		float endDegrees = line ? (360 * mag / et / r) : 360;
 
 		List<Float> points = new ArrayList<Float>();
-		
+
 		float Xstep = (float) 0.1;
-		
+
 		float startX = line ? -360 : 0;
 		float cosTwist;
-		
+
 		do {
 			float th = (et * startX) / endDegrees;
 			float twTh = shift + twistRate * th;
-			
+
 			cosTwist = (float) Math.cos(twTh);
-			
+
 			startX += Xstep;
 		} while (hideInward && drawTest(cosTwist));
-		
+
 		boolean active = !hideInward;
 
 		float end = line ? endDegrees : (endDegrees + startX);
-				
+
 		for (float x = startX; x <= end; x += Xstep) {
 			float th = (et * x) / endDegrees;
 			float twTh = shift + twistRate * th;
-			
+
 			cosTwist = (float) Math.cos(twTh);
-			
+
 			boolean draw = drawTest(cosTwist) || !hideInward;
-			
+
 			if (draw && !active) {
 				active = true;
 			}
-			
+
 			if (active && !draw) {
 				if (points.size() > 0) {
-					SVG.writePolyLine(buf, points, true, false, w);
+					SVG.writePolyLine(buf, points, inkColor, false, w);
 					points.clear();
 				}
 				active = false;
 			}
-			
+
 			if (draw) {
 				if (!line) {
 					float R = (float) (r + tr * Math.sin(twTh));
@@ -187,29 +201,32 @@ public class TwineLogo {
 						float lineX = cx + dx * d - dy * D;
 						float lineY = cy + dy * d + dx * D;
 
+						lineX = 128 + (lineX - 128) * scale;
+						lineY = 128 + (lineY - 128) * scale;
+
 						points.add(lineX);
 						points.add(lineY);
 					}
 				}
 			}
 		}
-		
+
 		if (points.size() > 0) {
-			SVG.writePolyLine(buf, points, true, false, w);
+			SVG.writePolyLine(buf, points, inkColor, false, w);
 		}
 
 	}
-	
+
 	private static boolean writeOutputFile(File file, String data) {
 		FileOutputStream fos = null;
-		
+
 		try {
 			fos = new FileOutputStream(file);
-			
+
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
-			
+
 			writer.write(data);
-			
+
 			writer.close();
 		} catch (IOException e) {
 			return false;

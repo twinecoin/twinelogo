@@ -33,3 +33,7 @@ convert -size 64x64     -background none ../img/twinelogo.svg -resize 64x64     
 
 cp ../reference/twinelogo64.png ../reference/twinelogo_small.png
 cp ../reference/twinelogo256.png ../reference/twinelogo_full.png
+
+convert -size 1536x1536 -background none     ../img/twinelogo.svg                               -resize 1536x1536    ../reference/twinelogo1536.png
+convert -bordercolor transparent -border 192 ../reference/twinelogo1536.png                                          ../reference/twinelogo1536_border.png   
+convert                                      ../reference/../reference/twinelogo1536_border.png -crop 1920x596+0+384 ../reference/twinebanner1920.png
